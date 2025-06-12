@@ -1,0 +1,261 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Cloudformation template for running HLF Portal on ECS, ALB, Fargate"
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues: [dev, sit, prod]
+    Default: dev
+    Description: Deployment Environment
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC where resources will be deployed
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: List of subnets for the ECS tasks and ALB
+  
+  ContainerImage:
+    Type: String
+    Default: 395630869830.dkr.ecr.ap-southeast-1.amazonaws.com/samplenodejs:1.0.0
+    Description: Docker image URI
+
+  AuthMethod:
+    Type: String
+    AllowedValues: [userpass, auth0, ad]
+    Default: ad
+    Description: Authentication Method
+    ConstraintDescription: Values can be userpass, auth0, ad
+  
+  DBType:
+    Type: String
+    Default: mariadb
+    Description: RDS Database engine
+
+  DBPort:
+    Type: String
+    Default: 3306
+    Description: RDS Database port
+
+  DBName:
+    Type: String
+    Description: RDS Database Name
+  
+  DBUsername:
+    Type: String
+    Description: RDS Database Username
+
+Resources:
+  # Security Groups
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "${AWS::StackName} ECS Security Group for ECS tasks for ${Environment}"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ecs-sg"
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "${AWS::StackName} ALB Security Group for ${Environment}"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-alb-sg"
+  
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${AWS::StackName}-task"
+      Cpu: "1024"
+      Memory: "2048"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt ECSTaskRole.Arn
+      ContainerDefinitions:
+        - Name: !Sub "${AWS::StackName}-container"
+          Image: !Ref ContainerImage
+          Essential: true
+          Environment:
+            - Name: AUTH_METHOD
+              Value: !Ref AuthMethod
+            - Name: DB_TYPE
+              Value: !Ref DBType
+            - Name: DB_HOST
+              Value: !Sub "{{resolve:ssm:/proj/hlf-portal-v1/${Environment}/rds/endpoint:1}}"
+            - Name: DB_PORT
+              Value: !Ref DBPort
+            - Name: DB_DATABASE
+              Value: !Ref DBName
+            - Name: DB_USER
+              Value: !Ref DBUsername
+            - Name: AWS_REGION
+              Value: !Ref "AWS::Region"
+          Secrets:
+            - Name: DB_PASSWORD
+              ValueFrom: !Sub "/proj/hlf-portal-v1/${Environment}/rds/password"
+          PortMappings:
+            - ContainerPort: 8080
+              HostPort: 8080
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref CloudWatchLogsGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: !Ref AWS::StackName
+
+  CloudWatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${AWS::StackName}-app"
+      RetentionInDays: 14
+
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: ALBListenerHTTP  # ALB Listener
+    Properties:
+      ServiceName: !Sub "${AWS::StackName}-ecs-service"
+      Cluster: !Sub "{{resolve:ssm:/proj/hlf-portal-v1/${Environment}/ecs-cluster/arn:1}}"
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      EnableExecuteCommand: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref ECSSecurityGroup
+          Subnets: !Ref SubnetIds
+      LoadBalancers:
+        - ContainerName: !Sub "${AWS::StackName}-container"
+          ContainerPort: 8080
+          TargetGroupArn: !Ref ALBTargetGroup
+
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${AWS::StackName}-alb"
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: "60"
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+      Subnets: !Ref SubnetIds
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-alb"
+
+  # ALB Target Group
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${AWS::StackName}-tg"
+      Port: 8080
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref VpcId
+      HealthCheckPath: /
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-target-group"
+
+  # HTTP Listener
+  ALBListenerHTTP:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ALBTargetGroup
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP
+
+  # IAM Roles - Removed explicit RoleName properties
+  ECSTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: SSMParameterAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/proj/hlf-portal-v1/${Environment}/*"
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/*"
+                Condition:
+                  StringEquals:
+                    "kms:ViaService": !Sub "ssm.${AWS::Region}.amazonaws.com"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ECSTaskExecutionRole"
+
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ECSExecPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: "*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ECSTaskRole"
+
+Outputs:
+  ALBDNSName:
+    Description: DNS name of the load balancer
+    Value: !GetAtt ALB.DNSName

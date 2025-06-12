@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Cloudformation template creates an RDS database with MariaDB"
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues: [dev, sit, prod]
+    Default: dev
+    Description: Deployment Environment
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC where resources will be deployed
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: List of subnets for the ECS tasks and ALB
+
+  DBName:
+    Type: String
+    Description: RDS Database Name
+  
+  DBUsername:
+    Type: String
+    Description: RDS Database Username
+
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub "${AWS::StackName} DB Subnet Group for ${Environment}"
+      SubnetIds: !Ref SubnetIds
+      DBSubnetGroupName: !Sub "${AWS::StackName}-rds-db-subnet-group"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-rds-db-subnet-group"
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "${AWS::StackName} RDS Security Group for ${Environment}"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 10.0.0.0/16 # adjust to allow ECS app IP range
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-rds-sg"
+
+  RDSDatabaseInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Sub "${AWS::StackName}-rds"
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      Engine: mariadb
+      EngineVersion: "10.11.13"
+      DBName: !Ref DBName
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Sub "{{resolve:ssm-secure:/proj/hlf-portal-v1/${Environment}/rds/password:1}}"
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      PubliclyAccessible: false
+      MultiAZ: false
+      BackupRetentionPeriod: 7
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-rds"
+
+  # SSM Parameter storing RDS Database ARN
+  StoreRDSDatabaseArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/proj/hlf-portal-v1/${Environment}/rds/endpoint"
+      Type: String
+      Value: !GetAtt RDSDatabaseInstance.Endpoint.Address

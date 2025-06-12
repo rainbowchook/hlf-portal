@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Cloudformation template for running HLF Portal on ECS Cluster"
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues: [dev, sit, prod]
+    Default: dev
+    Description: Deployment Environment
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC where resources will be deployed
+
+Resources:
+  # ECS Cluster
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "${AWS::StackName}-ecs-cluster"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ecs-cluster"
+
+  # SSM Parameter storing ECS Cluster ARN
+  StoreECSClusterArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/proj/hlf-portal-v1/${Environment}/ecs-cluster/arn"
+      Type: String
+      Value: !GetAtt ECSCluster.Arn # This returns the ECS Cluster ARN

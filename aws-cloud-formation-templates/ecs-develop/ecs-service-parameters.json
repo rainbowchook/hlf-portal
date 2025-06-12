@@ -1,0 +1,18 @@
+[
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-0fa118c368aa2cbf9"
+  },
+  {
+    "ParameterKey": "SubnetIds",
+    "ParameterValue": "subnet-07383cea1b18a60fe,subnet-00b04ee5384cc6cff"
+  },
+  {
+    "ParameterKey": "DBName",
+    "ParameterValue": "portal"
+  },
+  {
+    "ParameterKey": "DBUsername",
+    "ParameterValue": "portaluser"
+  }
+]
