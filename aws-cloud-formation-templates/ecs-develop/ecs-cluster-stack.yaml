@@ -25,3 +25,8 @@ Resources:
       Name: !Sub "/proj/hlf-portal-v1/${Environment}/ecs-cluster/arn"
       Type: String
       Value: !GetAtt ECSCluster.Arn # This returns the ECS Cluster ARN
+
+Outputs:
+  ECSClusterArn:
+    Description: ECS Cluster ARN
+    Value: !GetAtt ECSCluster.Arn

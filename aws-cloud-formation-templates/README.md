@@ -52,7 +52,25 @@ Deploy CloudFormation template with GitHub Connection:
 
 ### CloudFormation
 
-CloudFormationResourcePermissions
-```json
+Configure CloudFormation template details for the GitHub repo and stack as follows:
 
-```
+#### TemplatePath
+- [ECS Cluster stack template](./ecs-develop/ecs-cluster-stack.yaml)
+- [RDS stack template](./ecs-develop/rds-stack.yaml)
+- [ECS Service stack template](./ecs-develop/ecs-service-stack.yaml)
+
+#### CloudFormationResourcePermissions:
+- [ECS Cluster CF Resource Permissions](./ecs-develop/ecs-cluster-cf-resource-permissions.json)
+- [RDS CF Resource Permissions](./ecs-develop/rds-cf-resource-permissions.json)
+- [ECS Service CF Resource Permissions](./ecs-develop/ecs-service-cf-resource-permissions.json)
+
+#### TemplateConfiguration:
+- [ECS Cluster stack parameters](./ecs-develop/ecs-cluster-parameters.json)
+- [RDS stack parameters](./ecs-develop/rds-parameters.json)
+- [ECS Cluster parameters](./ecs-develop/ecs-service-parameters.json)
+
+#### ParameterOverrides
+- Raw JSON string provided directly in the pipeline
+- Overrides values from the template defaults OR the TemplateConfiguration file
+- Useful for dynamic values or secrets from Parameter Store/Secrets Manager
+- Format examples: `{"InstanceType":"t3.large","DBPassword":"{{resolve:secretsmanager:prod/db:password}}"}` or `{"Environment":"prod","DBPassword":"{{resolve:ssm:prod/db/password:1}}"}`

@@ -70,10 +70,21 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-rds"
 
-  # SSM Parameter storing RDS Database ARN
-  StoreRDSDatabaseArn:
+  # SSM Parameter storing RDS Database Endpoint
+  StoreRDSDatabaseEndpoint:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub "/proj/hlf-portal-v1/${Environment}/rds/endpoint"
       Type: String
       Value: !GetAtt RDSDatabaseInstance.Endpoint.Address
+
+Outputs:
+  RDSDatabaseArn:
+    Description: RDS Instance ARN
+    Value: !GetAtt RDSDatabaseInstance.Arn
+  RDSDatabaseEndpointAddress:
+    Description: RDS Instance Endpoint Address
+    Value: !GetAtt RDSDatabaseInstance.Endpoint.Address
+  RDSDatabaseEndpointPort:
+    Description: RDS Instance Endpoint Port
+    Value: !GetAtt RDSDatabaseInstance.Endpoint.Port
