@@ -8,10 +8,6 @@ Parameters:
     Default: dev
     Description: Deployment Environment
 
-  VpcId:
-    Type: AWS::EC2::VPC::Id
-    Description: VPC where resources will be deployed
-
 Resources:
   # ECS Cluster
   ECSCluster:
