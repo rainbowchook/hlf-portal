@@ -1,10 +1,10 @@
 # hlf-portal AWS Cloudformation Templates
 
-## AWS CLI
-
-### Setup
+## Setup
 
 The RDS password should be pre-created for the deployment Environment (`dev`, `sit`, `prod`).  [Example AWS CLI commands](./ecs-develop/deploy-0-ssm.sh)
+
+## AWS CLI
 
 ### Cloudformation
 
