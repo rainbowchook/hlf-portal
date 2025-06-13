@@ -1,35 +1,29 @@
 # hlf-portal AWS Cloudformation Templates
 
-## Parameters
+## AWS CLI
 
 Each stack has its own set of parameters in a `.json` file.
 
-Example:
+#### StackName
+[Do _NOT_ run as a script file.]  Example AWS CLI commands (`create-stack`, `delete-stack`, etc.) found here for each stack:
+- [hlf-portal-ecs-cluster-dev](./ecs-develop/deploy-1-ecs-cluster.sh)
+- [hlf-portal-rds-dev](./ecs-develop/deploy-2-rds.sh)
+- [hlf-portal-ecs-service-dev](./ecs-develop/deploy-3-ecs-service.sh)
 
-```json
-[
-  {
-    "ParameterKey": "Environment",
-    "ParameterValue": "dev"
-  },
-  {
-    "ParameterKey": "VpcId",
-    "ParameterValue": "vpc-0fa118c368aa2cbf9"
-  },
-  {
-    "ParameterKey": "SubnetIds",
-    "ParameterValue": "subnet-07383cea1b18a60fe,subnet-00b04ee5384cc6cff"
-  },
-  {
-    "ParameterKey": "DBName",
-    "ParameterValue": "portal"
-  },
-  {
-    "ParameterKey": "DBUsername",
-    "ParameterValue": "portaluser"
-  }
-]
-```
+#### TemplatePath
+- [ECS Cluster stack template](./ecs-develop/ecs-cluster-stack.yaml)
+- [RDS stack template](./ecs-develop/rds-stack.yaml)
+- [ECS Service stack template](./ecs-develop/ecs-service-stack.yaml)
+
+#### CloudFormationResourcePermissions:
+- [ECS Cluster CF Resource Permissions](./ecs-develop/ecs-cluster-cf-resource-permissions.json)
+- [RDS CF Resource Permissions](./ecs-develop/rds-cf-resource-permissions.json)
+- [ECS Service CF Resource Permissions](./ecs-develop/ecs-service-cf-resource-permissions.json)
+
+#### AWS CLI Parameters:
+- [ECS Cluster stack parameters](./ecs-develop/ecs-cluster-parameters.json)
+- [RDS stack parameters](./ecs-develop/rds-parameters.json)
+- [ECS Cluster parameters](./ecs-develop/ecs-service-parameters.json)
 
 ## Possible Modifications
 
@@ -88,12 +82,23 @@ Configure CloudFormation template details for the GitHub repo and stack as follo
 - [ECS Service CF Resource Permissions](./ecs-develop/ecs-service-cf-resource-permissions.json)
 
 #### TemplateConfiguration:
-- [ECS Cluster stack parameters](./ecs-develop/ecs-cluster-parameters.json)
-- [RDS stack parameters](./ecs-develop/rds-parameters.json)
-- [ECS Cluster parameters](./ecs-develop/ecs-service-parameters.json)
+- [ECS Cluster stack parameters](./ecs-develop/ecs-cluster-template-configuration.json)
+- [RDS stack parameters](./ecs-develop/rds-template-configuration.json)
+- [ECS Cluster parameters](./ecs-develop/ecs-service-template-configuration.json)
 
 #### ParameterOverrides
 - Raw JSON string provided directly in the pipeline
 - Overrides values from the template defaults OR the TemplateConfiguration file
 - Useful for dynamic values or secrets from Parameter Store/Secrets Manager
 - Format examples: `{"InstanceType":"t3.large","DBPassword":"{{resolve:secretsmanager:prod/db:password}}"}` or `{"Environment":"prod","DBPassword":"{{resolve:ssm-secure:prod/db/password:1}}"}`
+
+### Debugging CloudFormation deployment failure
+
+Troubleshooting: 
+
+#### Least-privilege permissions
+Allow full admin permissions in the CloudFormationResourcePermissions like the example of [unlimited CF resource permissions](./ecs-develop/unlimited-cf-resource-permissions.json)
+
+#### Files
+- Ensure that template file path and template configuration path are correct.
+- Ensure that the template configuration format is correct (not the same format as parameters file expected by AWS CLI command)
