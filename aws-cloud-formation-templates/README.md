@@ -64,7 +64,12 @@ GitHub Connection:
 
 ### CloudFormation template configuration
 
-Configure CloudFormation template details for the GitHub repo and stack as follows:
+Configure the pipeline's CloudFormation template details for the GitHub repo and individual stacks as follows:
+
+#### CodePipeline Name
+- DeployECSClusterToCFService
+- DeployRDSToCFService
+- DeployECSServiceToCFService
 
 #### StackName
 - [hlf-portal-ecs-cluster-dev](./ecs-develop/deploy-1-ecs-cluster.sh)
