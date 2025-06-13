@@ -81,7 +81,7 @@ Resources:
 Outputs:
   RDSDatabaseArn:
     Description: RDS Instance ARN
-    Value: !GetAtt RDSDatabaseInstance.Arn
+    Value: !GetAtt RDSDatabaseInstance.DBInstanceArn
   RDSDatabaseEndpointAddress:
     Description: RDS Instance Endpoint Address
     Value: !GetAtt RDSDatabaseInstance.Endpoint.Address
