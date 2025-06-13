@@ -48,6 +48,15 @@ In the ECS Service stack, change the Container Definition accordingly:
 
 ## AWS CodePipeline
 
+### Pipeline Creation
+
+Pipeline creation steps:
+1. Create new pipeline - Deploy to CloudFormation
+2. Choose source 
+  - [Source Provider: GitHub (via GitHub App)](#github-connection)
+  - Output artifact format: CodePipeline default
+3. [Configure CF template](#cloudformation-template-configuration)
+
 ### GitHub Connection
 
 Deploy CloudFormation template with CodeConnections (Git Trigger):
@@ -56,12 +65,17 @@ GitHub Connection:
 - Connection Name: `hlf-portal-pipeline`
 - Connection ARN: `arn:aws:codeconnections:ap-southeast-1:395630869830:connection/71b1e53e-9f5e-4e77-a9fe-ba592e83606b`
 
-- Select GitHub Repo: `hlf-portal-pipeline`
+- Select GitHub Repository name: `hlf-portal-pipeline`
+- Default branch: main
 
-
-### CloudFormation
+### CloudFormation template configuration
 
 Configure CloudFormation template details for the GitHub repo and stack as follows:
+
+#### StackName
+- [hlf-portal-ecs-cluster-dev](./ecs-develop/deploy-1-ecs-cluster.sh)
+- [hlf-portal-rds-dev](./ecs-develop/deploy-2-rds.sh)
+- [hlf-portal-ecs-service-dev](./ecs-develop/deploy-3-ecs-service.sh)
 
 #### TemplatePath
 - [ECS Cluster stack template](./ecs-develop/ecs-cluster-stack.yaml)
@@ -82,4 +96,4 @@ Configure CloudFormation template details for the GitHub repo and stack as follo
 - Raw JSON string provided directly in the pipeline
 - Overrides values from the template defaults OR the TemplateConfiguration file
 - Useful for dynamic values or secrets from Parameter Store/Secrets Manager
-- Format examples: `{"InstanceType":"t3.large","DBPassword":"{{resolve:secretsmanager:prod/db:password}}"}` or `{"Environment":"prod","DBPassword":"{{resolve:ssm:prod/db/password:1}}"}`
+- Format examples: `{"InstanceType":"t3.large","DBPassword":"{{resolve:secretsmanager:prod/db:password}}"}` or `{"Environment":"prod","DBPassword":"{{resolve:ssm-secure:prod/db/password:1}}"}`
