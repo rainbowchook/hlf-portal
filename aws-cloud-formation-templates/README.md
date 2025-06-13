@@ -2,6 +2,12 @@
 
 ## AWS CLI
 
+### Setup
+
+The RDS password should be pre-created for the deployment Environment (`dev`, `sit`, `prod`).  [Example AWS CLI commands](./ecs-develop/deploy-0-ssm.sh)
+
+### Cloudformation
+
 Each stack has its own set of parameters in a `.json` file.
 
 #### StackName
