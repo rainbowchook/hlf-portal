@@ -248,6 +248,7 @@ Resources:
               Service: ecs-tasks.amazonaws.com
             Action: sts:AssumeRole
       Policies:
+        # ECSExecPolicy only needed if EnableExecuteCommand is enabled for ECSService
         - PolicyName: ECSExecPolicy
           PolicyDocument:
             Version: "2012-10-17"
