@@ -117,6 +117,14 @@ Resources:
             - ContainerPort: 8080
               HostPort: 8080
               Protocol: tcp
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - "curl -f http://localhost:8080/ || exit 1"
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
           LogConfiguration:
             LogDriver: awslogs
             Options:

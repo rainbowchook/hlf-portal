@@ -1,6 +1,6 @@
 FROM alpine:3.22
 
-RUN apk add --update nodejs npm
+RUN apk add --update nodejs npm curl
 
 WORKDIR /app
 
