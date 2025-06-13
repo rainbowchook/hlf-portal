@@ -4,7 +4,6 @@ aws cloudformation create-stack \
   --stack-name hlf-portal-ecs-cluster-dev \
   --capabilities CAPABILITY_IAM \
   --template-body file://ecs-cluster-stack.yaml \
-  # --parameters file://ecs-cluster-parameters.json \ # VpcId not needed for ECS Cluster
   # --profile __PROFILE_NAME__ # optional
 
 aws cloudformation describe-stacks --stack-name hlf-portal-ecs-cluster-dev \
