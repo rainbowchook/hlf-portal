@@ -37,3 +37,22 @@ In the RDS stack, change the RDSSecurityGroup accordingly:
 In the ECS Service stack, change the Container Definition accordingly:
 - Environment: include any Environment Variables, either from the Parameters or dynamic resolution from SSM Parameter (string value only - secure string values must be defined in Secret)
 - Secret: SSM Parameter (secure string only) or Secrets Manager
+
+## AWS CodePipeline
+
+### GitHub Connection
+
+Deploy CloudFormation template with GitHub Connection:
+
+- Connection Name: `hlf-portal-pipeline`
+- Connection ARN: `arn:aws:codeconnections:ap-southeast-1:395630869830:connection/71b1e53e-9f5e-4e77-a9fe-ba592e83606b`
+
+- GitHub Repo: `hlf-portal-pipeline`
+
+
+### CloudFormation
+
+CloudFormationResourcePermissions
+```json
+
+```

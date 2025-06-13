@@ -1,11 +1,19 @@
 [
   {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  },
+  {
     "ParameterKey": "VpcId",
     "ParameterValue": "vpc-0fa118c368aa2cbf9"
   },
   {
     "ParameterKey": "SubnetIds",
     "ParameterValue": "subnet-07383cea1b18a60fe,subnet-00b04ee5384cc6cff"
+  },
+  {
+    "ParameterKey": "ContainerImage",
+    "ParameterValue": "395630869830.dkr.ecr.ap-southeast-1.amazonaws.com/samplenodejs:1.0.0"
   },
   {
     "ParameterKey": "DBName",
