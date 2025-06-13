@@ -3,7 +3,6 @@
     "Environment": "dev",
     "VpcId": "vpc-0fa118c368aa2cbf9",
     "SubnetIds": "subnet-07383cea1b18a60fe,subnet-00b04ee5384cc6cff",
-    "ContainerImage": "395630869830.dkr.ecr.ap-southeast-1.amazonaws.com/samplenodejs:1.0.0",
     "DBName": "portal",
     "DBUsername": "portaluser"
   }
