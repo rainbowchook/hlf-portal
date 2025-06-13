@@ -4,12 +4,36 @@
     {
       "Effect": "Allow",
       "Action": [
-        "ecs:CreateCluster",
-        "ecs:DeleteCluster",
-        "ecs:DescribeClusters",
-        "ecs:TagResource",
-        "ecs:UntagResource",
-        "ecs:ListTagsForResource"
+        "rds:CreateDBInstance",
+        "rds:DeleteDBInstance",
+        "rds:DescribeDBInstances",
+        "rds:ModifyDBInstance",
+        "rds:CreateDBSubnetGroup",
+        "rds:DeleteDBSubnetGroup",
+        "rds:DescribeDBSubnetGroups",
+        "rds:ModifyDBSubnetGroup",
+        "rds:AddTagsToResource",
+        "rds:RemoveTagsFromResource",
+        "rds:ListTagsForResource",
+        "rds:DescribeDBEngineVersions"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateSecurityGroup",
+        "ec2:DeleteSecurityGroup",
+        "ec2:DescribeSecurityGroups",
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:AuthorizeSecurityGroupEgress",
+        "ec2:RevokeSecurityGroupIngress",
+        "ec2:RevokeSecurityGroupEgress",
+        "ec2:CreateTags",
+        "ec2:DeleteTags",
+        "ec2:DescribeTags",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets"
       ],
       "Resource": "*"
     },
@@ -17,7 +41,7 @@
       "Effect": "Allow",
       "Action": [
         "ssm:PutParameter",
-        "ssm:DeleteParamater",
+        "ssm:DeleteParameter",
         "ssm:GetParameter",
         "ssm:GetParameters",
         "ssm:DescribeParameters",

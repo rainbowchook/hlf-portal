@@ -17,7 +17,7 @@
       "Effect": "Allow",
       "Action": [
         "ssm:PutParameter",
-        "ssm:DeleteParamater",
+        "ssm:DeleteParameter",
         "ssm:GetParameter",
         "ssm:GetParameters",
         "ssm:DescribeParameters",

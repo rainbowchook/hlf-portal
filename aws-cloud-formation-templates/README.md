@@ -2,8 +2,16 @@
 
 ## Parameters
 
+Each stack has its own set of parameters in a `.json` file.
+
+Example:
+
 ```json
 [
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  },
   {
     "ParameterKey": "VpcId",
     "ParameterValue": "vpc-0fa118c368aa2cbf9"
@@ -42,12 +50,13 @@ In the ECS Service stack, change the Container Definition accordingly:
 
 ### GitHub Connection
 
-Deploy CloudFormation template with GitHub Connection:
+Deploy CloudFormation template with CodeConnections (Git Trigger):
 
+GitHub Connection:
 - Connection Name: `hlf-portal-pipeline`
 - Connection ARN: `arn:aws:codeconnections:ap-southeast-1:395630869830:connection/71b1e53e-9f5e-4e77-a9fe-ba592e83606b`
 
-- GitHub Repo: `hlf-portal-pipeline`
+- Select GitHub Repo: `hlf-portal-pipeline`
 
 
 ### CloudFormation
